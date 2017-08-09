@@ -1,0 +1,23 @@
+{
+  "name": "native-modules",
+  "version": "1.0.0",
+  "description": "react native nativeModules原生方法封装",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/xiaomaer/nativeModules.git"
+  },
+  "keywords": [
+    "react-native",
+    "NativeModules"
+  ],
+  "author": "xiaoma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xiaomaer/nativeModules/issues"
+  },
+  "homepage": "https://github.com/xiaomaer/nativeModules#readme"
+}
