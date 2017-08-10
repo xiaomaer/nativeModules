@@ -1,4 +1,4 @@
-export function ArrayRandomSort(arr) {
+function ArrayRandomSort(arr) {
     var newArray = [];
     while (arr.length > 0) {
         //随机获取原数组中的元素，存到新数组，并删除原数组该元素
@@ -8,3 +8,4 @@ export function ArrayRandomSort(arr) {
     }
     return newArray;
 }
+export { ArrayRandomSort as default, ArrayRandomSort }; 
