@@ -3,6 +3,7 @@ const { CDBridgeAnalytics, CDBridgeScheme, CDBridgeShare, CDBridgeAccount, CDBri
 const version = global.version;
 
 /* ===============================NativeModules方法封装通用方法================================ */
+
 /**
  * 判断该客户端版本是否支持该方法
  * @param {string} miniVersion:必填，支持该方法的最小版本
@@ -57,12 +58,13 @@ function _unSupported(methodName) {
 function _handleIntToString(obj) {
     let _params = {};
     for (let key in obj) {
-        _params[key] = obj[key];
+        _params[key] = String(obj[key]);
     }
     return _params;
 }
 
 /* ===============================NativeModules方法封装================================ */
+
 /* ==============统计埋点相关方法START================ */
 /**
  * 统计事件（android和iOS咕咚 v8.0.0开始支持该方法）
@@ -73,7 +75,6 @@ function _handleIntToString(obj) {
  */
 function logEvent(options) {
     const isSupported = _compareWithVersion('8.0.0');
-    //支持方法
     if (isSupported) {
         try {//方法执行成功
             CDBridgeAnalytics.logEvent(options.eventID);
@@ -81,7 +82,7 @@ function logEvent(options) {
         } catch (error) {//方法执行失败
             return _handleError(error);
         }
-    } else {//不支持方法
+    } else {
         return _unSupported('logEvent');
     }
 }
@@ -176,6 +177,7 @@ function endTimedEventWithParams(options) {
 function logTimedEventWithParamsAndTag(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        options.params = options.params || {};
         if (Platform.OS === 'android') {
             options.params = _handleIntToString(options.params);
         }
@@ -201,6 +203,7 @@ function logTimedEventWithParamsAndTag(options) {
 function endTimedEventWithParamsAndTag(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        options.params = options.params || {};
         if (Platform.OS === 'android') {
             options.params = _handleIntToString(options.params);
         }
@@ -282,7 +285,7 @@ function fetchAccount() {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
         const resultPromise = CDBridgeAccount.fetchAccount();
-        resultPromise.then((user) => _handleError(user))
+        resultPromise.then((user) => _handleSuccess(user))
             .catch((error) => _handleError(error));
     } else {
         return _unSupported('fetchAccount');
@@ -295,7 +298,7 @@ function fetchLocation() {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
         const resultPromise = CDBridgeLocation.fetchLocation();
-        resultPromise.then((location) => _handleError(location))
+        resultPromise.then((location) => _handleSuccess(location))
             .catch((error) => _handleError(error));
     } else {
         return _unSupported('fetchLocation');
@@ -323,7 +326,11 @@ function postURL(options) {
 }
 /**
  * GET请求（android和iOS咕咚 v8.0.0开始支持该方法）
- * @param {object} options 
+ * @param {object} options ：格式如下：
+ * {
+ *      url:'发送请求完整API，string，必需',
+ *      params:'接口传参和配置参数，objcet，必需'
+ * }
  */
 function getURL(options) {
     const isSupported = _compareWithVersion('8.0.0');
@@ -336,7 +343,6 @@ function getURL(options) {
     }
 }
 /* ==============网络请求END================ */
-
 
 
 /* ==============用户关系start================ */
