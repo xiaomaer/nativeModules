@@ -1,6 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 const { CDBridgeAnalytics, CDBridgeScheme, CDBridgeShare, CDBridgeAccount, CDBridgeLocation, CDBridgeService, CDBridgeContacts, CDBridgeNavigation, CDBridgeAppEventEmitter } = NativeModules;
-const version = global.version='8.1.0';
+const version = global.version = '8.1.0';
 
 /* ===============================NativeModules方法封装通用方法================================ */
 
@@ -264,15 +264,16 @@ function handleSchemeURL(options) {
  * {
  *      types:'分享类型，array，必需',
  *      defaultShareInfo:'默认分享信息，object，必需',
- *      customShareInfo:'自定义分享信息，object，必填'
+ *      customShareInfo:'自定义分享信息，object，必填',
+ *      callback:'回调函数,function，选填'
  * }
  */
 function shareWithTypes(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
         const resultPromise = CDBridgeShare.shareWithTypes(options.types, options.defaultShareInfo, options.customShareInfo);
-        resultPromise.then((success) => _handleSuccess({ success }))
-            .catch((error) => _handleError(error));
+        resultPromise.then((success) => options.success & options.success(_handleSuccess({ success })))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('shareWithTypes');
     }
@@ -281,12 +282,12 @@ function shareWithTypes(options) {
 /**
  * 获取当前用户信息（android和iOS咕咚 v8.0.0开始支持该方法）
  */
-function fetchAccount() {
+function fetchAccount(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
         const resultPromise = CDBridgeAccount.fetchAccount();
-        resultPromise.then((user) => _handleSuccess(user))
-            .catch((error) => _handleError(error));
+        resultPromise.then((user) => options.success && options.success(_handleSuccess(user)))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('fetchAccount');
     }
@@ -294,12 +295,12 @@ function fetchAccount() {
 /**
  * 获取当前用户定位信息（android和iOS咕咚 v8.0.0开始支持该方法）
  */
-function fetchLocation() {
+function fetchLocation(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
         const resultPromise = CDBridgeLocation.fetchLocation();
-        resultPromise.then((location) => _handleSuccess(location))
-            .catch((error) => _handleError(error));
+        resultPromise.then((location) => options.success && options.success(_handleSuccess(location)))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('fetchLocation');
     }
@@ -311,15 +312,22 @@ function fetchLocation() {
  * @param {object} options ：格式如下：
  * {
  *      url:'发送请求完整API，string，必需',
- *      params:'接口传参和配置参数，objcet，必需'
+ *      data:'接口传参，objcet，必需',
+ *      cache:'是否缓存，boolean,选填，默认false',
+ *      verify:'是否验签，boolean，选填，默认true'
  * }
  */
 function postURL(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
-        const resultPromise = CDBridgeService.postURL(options.url, options.params);
-        resultPromise.then((response) => _handleSuccess(JSON.parse(response)))
-            .catch((error) => _handleError(error));
+        const params = {
+            param: options.data,
+            cache: options.cache || false,
+            verify_signature: options.verify || true
+        }
+        const resultPromise = CDBridgeService.postURL(options.url, params);
+        resultPromise.then((response) => options.success && options.success(_handleSuccess(JSON.parse(response))))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('postURL');
     }
@@ -329,15 +337,22 @@ function postURL(options) {
  * @param {object} options ：格式如下：
  * {
  *      url:'发送请求完整API，string，必需',
- *      params:'接口传参和配置参数，objcet，必需'
+ *      data:'接口传参，objcet，必需',
+ *      cache:'是否缓存，boolean,选填，默认false',
+ *      verify:'是否验签，boolean，选填，默认true'
  * }
  */
 function getURL(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
-        const resultPromise = CDBridgeService.getURL(options.url, options.params);
-        resultPromise.then((response) => _handleSuccess(JSON.parse(response)))
-            .catch((error) => _handleError(error));
+        const params = {
+            param: options.data,
+            cache: options.cache || false,
+            verify_signature: options.verify || true
+        }
+        const resultPromise = CDBridgeService.getURL(options.url, params);
+        resultPromise.then((response) => options.success && options.success(_handleSuccess(JSON.parse(response))))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('getURL');
     }
@@ -350,17 +365,17 @@ function getURL(options) {
  * 获取用户关系（android和iOS咕咚 v8.0.0开始支持该方法）
  * @param {object} options :格式如下：
  * {
- *      userId:'被查询的用户ID，string，必需'
+ *      userID:'被查询的用户ID，string，必需',
  * }
  */
 function relationWithUserID(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
-        CDBridgeContacts.relationWithUserID(options.userId, (error, status) => {
+        CDBridgeContacts.relationWithUserID(options.userID, (error, status) => {
             if (error) {
-                return _handleError(error);
+                options.error && options.error(_handleError(error));
             } else {
-                return _handleSuccess({ status });
+                options.success && options.success(_handleSuccess({ status }));
             }
         })
     } else {
@@ -370,12 +385,12 @@ function relationWithUserID(options) {
 /**
  * 更新用户关系（android和iOS咕咚 v8.0.0开始支持该方法）
  */
-function synchronizeRelations() {
+function synchronizeRelations(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
         const resultPromise = CDBridgeContacts.synchronizeRelations();
-        resultPromise.then(() => _handleSuccess())
-            .catch((error) => _handleError(error));
+        resultPromise.then(() => options.success && options.success(_handleSuccess({ update: true })))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('synchronizeRelations');
     }
@@ -391,7 +406,7 @@ function initPageType(options) {
     if (Platform.OS === 'android' && _compareWithVersion('8.0.0')) {
         try {
             CDBridgeContacts.initPageType(options.type, function () { });
-            return _handleSuccess();
+            return _handleSuccess({ pageType: options.type });
         } catch (error) {
             return _handleError(error);
         }
@@ -413,7 +428,7 @@ function popModule(options) {
     if (isSupported) {
         try {
             CDBridgeNavigation.popModule(options.moduleName);
-            return _handleSuccess;
+            return _handleSuccess({ popModule: true });
         } catch (error) {
             return _handleError(error);
         }
