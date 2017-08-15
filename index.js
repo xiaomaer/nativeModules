@@ -1,6 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 const { CDBridgeAnalytics, CDBridgeScheme, CDBridgeShare, CDBridgeAccount, CDBridgeLocation, CDBridgeService, CDBridgeContacts, CDBridgeNavigation, CDBridgeAppEventEmitter } = NativeModules;
-const version = global.version;
+const version = global.version='8.1.0';
 
 /* ===============================NativeModules方法封装通用方法================================ */
 

@@ -10,7 +10,7 @@ npm install mia-native-modules --save-dev
 ```
 import NativeMethods from 'mia-native-modules';//导入默认模块
 //或者
-import * as array from 'mia-native-modules';//整个导入模块
+import * as NativeMethods from 'mia-native-modules';//整个导入模块
 //或者
 import { logEvent } from 'mia-native-modules';//导入模块单个方法
 //或者
