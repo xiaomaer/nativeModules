@@ -1,6 +1,6 @@
 {
     "name": "mia-native-modules",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "react native nativeModules原生方法封装",
     "main": "index.js",
     "scripts": {

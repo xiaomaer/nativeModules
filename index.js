@@ -76,6 +76,8 @@ function _handleIntToString(obj) {
 function logEvent(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        //必填参数限制
+        if (!options || !options.eventID) throw new Error('必填参数不能为空');
         try {//方法执行成功
             CDBridgeAnalytics.logEvent(options.eventID);
             return _handleSuccess();
@@ -97,6 +99,8 @@ function logEvent(options) {
 function logEventWithParams(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        //必填参数限制
+        if (!options || !options.eventID) throw new Error('必填参数不能为空');
         options.params = options.params || {};
         if (Platform.OS === 'android') {
             //处理params值。android中当值为string时，不能传int类型的值；iOS则支持。
@@ -124,6 +128,8 @@ function logEventWithParams(options) {
 function logTimedEventWithParams(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        //必填参数限制
+        if (!options || !options.eventID) throw new Error('必填参数不能为空');
         options.params = options.params || {};
         if (Platform.OS === 'android') {
             options.params = _handleIntToString(options.params);
@@ -151,6 +157,8 @@ function logTimedEventWithParams(options) {
 function endTimedEventWithParams(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        //必填参数限制
+        if (!options || !options.eventID) throw new Error('必填参数不能为空');
         options.params = options.params || {};
         if (Platform.OS === 'android') {
             options.params = _handleIntToString(options.params);
@@ -177,6 +185,8 @@ function endTimedEventWithParams(options) {
 function logTimedEventWithParamsAndTag(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        //必填参数限制
+        if (!options || !options.eventID || !options.tag) throw new Error('必填参数不能为空');
         options.params = options.params || {};
         if (Platform.OS === 'android') {
             options.params = _handleIntToString(options.params);
@@ -203,6 +213,7 @@ function logTimedEventWithParamsAndTag(options) {
 function endTimedEventWithParamsAndTag(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.eventID || !options.tag) throw new Error('必填参数不能为空');
         options.params = options.params || {};
         if (Platform.OS === 'android') {
             options.params = _handleIntToString(options.params);
@@ -228,6 +239,7 @@ function endTimedEventWithParamsAndTag(options) {
 function miaoZhenAdAnalytics(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.url) throw new Error('必填参数不能为空');
         try {
             CDBridgeAnalytics.miaoZhenAdAnalytics(options.url);
             return _handleSuccess();
@@ -244,15 +256,18 @@ function miaoZhenAdAnalytics(options) {
  * 页面跳转，包括跳转原生页面和浏览器页面（android和iOS咕咚 v8.0.0开始支持该方法）
  * @param {object} options：格式如下：
  * {
- *      url:'跳转协议，string，必需'
+ *      url:'跳转协议，string，必需',
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  * } 
  */
 function handleSchemeURL(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.url) throw new Error('必填参数不能为空');
         const resultPromise = CDBridgeScheme.handleSchemeURL(options.url);
-        resultPromise.then(() => _handleSuccess())
-            .catch((error) => _handleError(error));
+        resultPromise.then(() => options.success && options.success(_handleSuccess()))
+            .catch((error) => options.error && options.error(_handleError(error)));
     } else {
         return _unSupported('handleSchemeURL');
     }
@@ -265,12 +280,17 @@ function handleSchemeURL(options) {
  *      types:'分享类型，array，必需',
  *      defaultShareInfo:'默认分享信息，object，必需',
  *      customShareInfo:'自定义分享信息，object，必填',
- *      callback:'回调函数,function，选填'
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  * }
  */
 function shareWithTypes(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options) throw new Error('传参不能为空');
+        if (!options.types || options.types.length === 0) throw new Error('参数types不能为空');
+        if (!options.defaultShareInfo || !options.defaultShareInfo.title || !options.defaultShareInfo.content) throw new Error('参数defaultShareInfo必填参数不能为空');
+        if (!options.customShareInfo || !options.customShareInfo.title || !options.customShareInfo.content) throw new Error('参数customShareInfo必填参数不能为空');
         const resultPromise = CDBridgeShare.shareWithTypes(options.types, options.defaultShareInfo, options.customShareInfo);
         resultPromise.then((success) => options.success & options.success(_handleSuccess({ success })))
             .catch((error) => options.error && options.error(_handleError(error)));
@@ -281,6 +301,10 @@ function shareWithTypes(options) {
 
 /**
  * 获取当前用户信息（android和iOS咕咚 v8.0.0开始支持该方法）
+ *  @param {object} options：格式如下：
+ * {
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  */
 function fetchAccount(options) {
     const isSupported = _compareWithVersion('8.0.0');
@@ -294,6 +318,10 @@ function fetchAccount(options) {
 }
 /**
  * 获取当前用户定位信息（android和iOS咕咚 v8.0.0开始支持该方法）
+ * @param {object} options：格式如下：
+ * {
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  */
 function fetchLocation(options) {
     const isSupported = _compareWithVersion('8.0.0');
@@ -312,16 +340,19 @@ function fetchLocation(options) {
  * @param {object} options ：格式如下：
  * {
  *      url:'发送请求完整API，string，必需',
- *      data:'接口传参，objcet，必需',
+ *      data:'接口传参，objcet，选填，默认{}',
  *      cache:'是否缓存，boolean,选填，默认false',
- *      verify:'是否验签，boolean，选填，默认true'
+ *      verify:'是否验签，boolean，选填，默认true',
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  * }
  */
 function postURL(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.url) throw new Error('必填参数不能为空');
         const params = {
-            param: options.data,
+            param: options.data || {},
             cache: options.cache || false,
             verify_signature: options.verify || true
         }
@@ -337,16 +368,19 @@ function postURL(options) {
  * @param {object} options ：格式如下：
  * {
  *      url:'发送请求完整API，string，必需',
- *      data:'接口传参，objcet，必需',
+ *      data:'接口传参，objcet，选填，默认{}',
  *      cache:'是否缓存，boolean,选填，默认false',
- *      verify:'是否验签，boolean，选填，默认true'
+ *      verify:'是否验签，boolean，选填，默认true',
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  * }
  */
 function getURL(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.url) throw new Error('必填参数不能为空');
         const params = {
-            param: options.data,
+            param: options.data || {},
             cache: options.cache || false,
             verify_signature: options.verify || true
         }
@@ -366,11 +400,14 @@ function getURL(options) {
  * @param {object} options :格式如下：
  * {
  *      userID:'被查询的用户ID，string，必需',
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
  * }
  */
 function relationWithUserID(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.userID) throw new Error('必填参数不能为空');
         CDBridgeContacts.relationWithUserID(options.userID, (error, status) => {
             if (error) {
                 options.error && options.error(_handleError(error));
@@ -384,6 +421,11 @@ function relationWithUserID(options) {
 }
 /**
  * 更新用户关系（android和iOS咕咚 v8.0.0开始支持该方法）
+ * @param {object} options :格式如下：
+ * {
+ *      success:'成功回调函数，function，选填',
+ *      error:'失败回调函数，function，选填'
+ * }
  */
 function synchronizeRelations(options) {
     const isSupported = _compareWithVersion('8.0.0');
@@ -404,6 +446,7 @@ function synchronizeRelations(options) {
  */
 function initPageType(options) {
     if (Platform.OS === 'android' && _compareWithVersion('8.0.0')) {
+        if (!options || !options.type) throw new Error('必填参数不能为空');
         try {
             CDBridgeContacts.initPageType(options.type, function () { });
             return _handleSuccess({ pageType: options.type });
@@ -426,6 +469,7 @@ function initPageType(options) {
 function popModule(options) {
     const isSupported = _compareWithVersion('8.0.0');
     if (isSupported) {
+        if (!options || !options.moduleName) throw new Error('必填参数不能为空');
         try {
             CDBridgeNavigation.popModule(options.moduleName);
             return _handleSuccess({ popModule: true });
